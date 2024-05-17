@@ -1,25 +1,24 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{hash_map::Entry, HashMap, HashSet};
 
 pub struct Solution {}
 
 impl Solution {
     pub fn get_ancestors(n: i32, edges: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
-        let mut visited: Vec<bool> = vec![false; n as usize];
         let mut graph: HashMap<i32, Vec<i32>> = (0..n).map(|n| (n, vec![])).collect();
-        let mut all_visited_from: HashMap<i32, HashSet<i32>> = HashMap::with_capacity(n as usize);
+        let mut visited: HashMap<i32, HashSet<i32>> = HashMap::with_capacity(n as usize);
         edges.iter().for_each(|v| {
             graph.get_mut(&v[0]).unwrap().push(v[1]);
         });
 
         let mut sorted = Vec::with_capacity(n as usize);
         for v in 0..n {
-            Solution::dfs(&graph, &mut visited, &mut all_visited_from, &mut sorted, v);
+            Solution::dfs(&graph, &mut visited, &mut sorted, v);
         }
 
         let mut result = vec![vec![]; n as usize];
         for (i, child) in sorted.iter().enumerate() {
             for ancestor in sorted[i + 1..sorted.len()].iter() {
-                if let Some(path) = all_visited_from.get(ancestor) {
+                if let Some(path) = visited.get(ancestor) {
                     if path.contains(child) {
                         result[*child as usize].push(*ancestor);
                     }
@@ -32,22 +31,21 @@ impl Solution {
 
     fn dfs(
         graph: &HashMap<i32, Vec<i32>>,
-        visited: &mut Vec<bool>,
-        all_visited_from: &mut HashMap<i32, HashSet<i32>>,
+        visited: &mut HashMap<i32, HashSet<i32>>,
         sorted: &mut Vec<i32>,
         v: i32,
     ) {
-        if visited[v as usize] {
+        if let Entry::Vacant(e) = visited.entry(v) {
+            e.insert(HashSet::new());
+        } else {
             return;
         }
-        all_visited_from.entry(v).or_default();
 
-        visited[v as usize] = true;
         if let Some(adj) = graph.get(&v) {
             for u in adj {
-                Solution::dfs(graph, visited, all_visited_from, sorted, *u);
-                let childs = all_visited_from.get(u).unwrap().clone();
-                if let Some(nodes) = all_visited_from.get_mut(&v) {
+                Solution::dfs(graph, visited, sorted, *u);
+                let childs = visited.get(u).unwrap().clone();
+                if let Some(nodes) = visited.get_mut(&v) {
                     nodes.insert(*u);
                     nodes.extend(childs.iter());
                 }
