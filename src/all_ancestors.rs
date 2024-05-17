@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 pub struct Solution {}
 
@@ -6,61 +6,54 @@ impl Solution {
     pub fn get_ancestors(n: i32, edges: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
         let mut visited: Vec<bool> = vec![false; n as usize];
         let mut graph: HashMap<i32, Vec<i32>> = (0..n).map(|n| (n, vec![])).collect();
+        let mut all_visited_from: HashMap<i32, HashSet<i32>> = HashMap::with_capacity(n as usize);
         edges.iter().for_each(|v| {
             graph.get_mut(&v[0]).unwrap().push(v[1]);
         });
 
         let mut sorted = Vec::with_capacity(n as usize);
         for v in 0..n {
-            Solution::dfs(&graph, &mut visited, &mut sorted, v);
+            Solution::dfs(&graph, &mut visited, &mut all_visited_from, &mut sorted, v);
         }
 
         let mut result = vec![vec![]; n as usize];
         for (i, child) in sorted.iter().enumerate() {
             for ancestor in sorted[i + 1..sorted.len()].iter() {
-                visited = vec![false; n as usize];
-                if Solution::has_path(&graph, &mut visited, *child, *ancestor) {
-                    result[*child as usize].push(*ancestor);
-                    result[*child as usize].sort();
+                if let Some(path) = all_visited_from.get(ancestor) {
+                    if path.contains(child) {
+                        result[*child as usize].push(*ancestor);
+                    }
                 }
             }
+            result[*child as usize].sort();
         }
         result
     }
 
-    fn dfs(graph: &HashMap<i32, Vec<i32>>, visited: &mut Vec<bool>, sorted: &mut Vec<i32>, v: i32) {
+    fn dfs(
+        graph: &HashMap<i32, Vec<i32>>,
+        visited: &mut Vec<bool>,
+        all_visited_from: &mut HashMap<i32, HashSet<i32>>,
+        sorted: &mut Vec<i32>,
+        v: i32,
+    ) {
         if visited[v as usize] {
             return;
         }
+        all_visited_from.entry(v).or_default();
+
         visited[v as usize] = true;
         if let Some(adj) = graph.get(&v) {
             for u in adj {
-                Solution::dfs(graph, visited, sorted, *u);
+                Solution::dfs(graph, visited, all_visited_from, sorted, *u);
+                let childs = all_visited_from.get(u).unwrap().clone();
+                if let Some(nodes) = all_visited_from.get_mut(&v) {
+                    nodes.insert(*u);
+                    nodes.extend(childs.iter());
+                }
             }
         }
         sorted.push(v);
-    }
-
-    fn has_path(
-        graph: &HashMap<i32, Vec<i32>>,
-        visited: &mut Vec<bool>,
-        dst: i32,
-        src: i32,
-    ) -> bool {
-        if visited[src as usize] {
-            return false;
-        }
-        if let Some(adj) = graph.get(&src) {
-            for u in adj {
-                if *u == dst {
-                    return true;
-                }
-                if Solution::has_path(graph, visited, dst, *u) {
-                    return true;
-                }
-            }
-        }
-        false
     }
 }
 
@@ -122,7 +115,7 @@ mod test {
         );
     }
 
-    //#[test]
+    #[test]
     fn test3() {
         let result = Solution::get_ancestors(
             52,
@@ -1016,9 +1009,6 @@ mod test {
                 vec![36, 44],
             ],
         );
-        assert_eq!(
-            result,
-            vec![vec![], vec![0], vec![0, 1], vec![0, 1, 2], vec![0, 1, 2, 3]]
-        );
+        assert_eq!(result.len(), 52);
     }
 }
