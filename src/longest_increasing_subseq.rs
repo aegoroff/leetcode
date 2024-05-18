@@ -13,9 +13,7 @@ impl Solution {
                     length[k] = max(length[k], length[i] + 1);
                 }
             }
-            if length[k] > result {
-                result = length[k];
-            }
+            result = max(length[k], result);
         }
         result
     }
