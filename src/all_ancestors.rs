@@ -1,54 +1,54 @@
-use std::collections::{hash_map::Entry, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 
 pub struct Solution {}
 
 impl Solution {
     pub fn get_ancestors(n: i32, edges: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
-        let mut graph: HashMap<i32, Vec<i32>> = (0..n).map(|n| (n, vec![])).collect();
-        let mut visited: HashMap<i32, HashSet<i32>> = HashMap::with_capacity(n as usize);
+        let mut graph: HashMap<i32, HashSet<i32>> = (0..n).map(|n| (n, HashSet::new())).collect();
+        let mut visited: Vec<bool> = vec![false; n as usize];
         edges.iter().for_each(|v| {
-            graph.get_mut(&v[0]).unwrap().push(v[1]);
+            graph.get_mut(&v[0]).unwrap().insert(v[1]);
         });
 
         let mut sorted = Vec::with_capacity(n as usize);
         for v in 0..n {
             Solution::dfs(&graph, &mut visited, &mut sorted, v);
         }
+        sorted.reverse();
 
         let mut result = vec![vec![]; n as usize];
-        for (i, child) in sorted.iter().enumerate() {
-            for ancestor in sorted[i + 1..sorted.len()].iter() {
-                if let Some(path) = visited.get(ancestor) {
-                    if path.contains(child) {
-                        result[*child as usize].push(*ancestor);
+
+        for (i, child) in sorted.iter().enumerate().skip(1) {
+            for prev in sorted.iter().take(i) {
+                if let Some(nodes) = graph.get(prev) {
+                    if nodes.contains(child) {
+                        let prev_ancestors = result[*prev as usize].clone();
+                        result[*child as usize].push(*prev);
+                        result[*child as usize].extend(prev_ancestors);
                     }
                 }
             }
             result[*child as usize].sort();
+            result[*child as usize].dedup();
         }
         result
     }
 
     fn dfs(
-        graph: &HashMap<i32, Vec<i32>>,
-        visited: &mut HashMap<i32, HashSet<i32>>,
+        graph: &HashMap<i32, HashSet<i32>>,
+        visited: &mut Vec<bool>,
         sorted: &mut Vec<i32>,
         v: i32,
     ) {
-        if let Entry::Vacant(e) = visited.entry(v) {
-            e.insert(HashSet::new());
-        } else {
+        if visited[v as usize] {
             return;
         }
+
+        visited[v as usize] = true;
 
         if let Some(adj) = graph.get(&v) {
             for u in adj {
                 Solution::dfs(graph, visited, sorted, *u);
-                let childs = visited.get(u).unwrap().clone();
-                if let Some(nodes) = visited.get_mut(&v) {
-                    nodes.insert(*u);
-                    nodes.extend(childs.iter());
-                }
             }
         }
         sorted.push(v);
