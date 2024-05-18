@@ -5,6 +5,7 @@ pub struct Solution {}
 impl Solution {
     pub fn length_of_lis(nums: Vec<i32>) -> i32 {
         let mut length = vec![0; nums.len()];
+        let mut result = 0;
         for k in 0..nums.len() {
             length[k] = 1;
             for i in 0..k {
@@ -12,9 +13,11 @@ impl Solution {
                     length[k] = max(length[k], length[i] + 1);
                 }
             }
+            if length[k] > result {
+                result = length[k];
+            }
         }
-        length.sort();
-        *length.last().unwrap()
+        result
     }
 }
 
