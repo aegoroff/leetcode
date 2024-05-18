@@ -4,29 +4,16 @@ pub struct Solution {}
 
 impl Solution {
     pub fn get_ancestors(n: i32, edges: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
-        let mut graph: HashMap<i32, Vec<i32>> = (0..n).map(|n| (n, vec![])).collect();
+        let mut graph: HashMap<i32, Vec<i32>> = HashMap::with_capacity(n as usize);
         let mut visited: Vec<bool> = vec![false; n as usize];
         edges.iter().for_each(|v| {
-            graph.get_mut(&v[1]).unwrap().push(v[0]);
+            graph.entry(v[1]).or_default().push(v[0]);
         });
 
-        let mut sorted = Vec::with_capacity(n as usize);
-        for v in 0..n {
-            Solution::dfs(&graph, &mut visited, &mut sorted, v);
-        }
-
         let mut result = vec![vec![]; n as usize];
-
-        for child in sorted.iter().skip(1) {
-            if let Some(incominig) = graph.get(child) {
-                for income in incominig.iter() {
-                    let prev_ancestors = result[*income as usize].clone();
-                    result[*child as usize].push(*income);
-                    result[*child as usize].extend(prev_ancestors);
-                }
-            }
-            result[*child as usize].sort();
-            result[*child as usize].dedup();
+        for v in 0..n {
+            graph.entry(v).or_default();
+            Solution::dfs(&graph, &mut visited, &mut result, v);
         }
         result
     }
@@ -34,7 +21,7 @@ impl Solution {
     fn dfs(
         graph: &HashMap<i32, Vec<i32>>,
         visited: &mut Vec<bool>,
-        sorted: &mut Vec<i32>,
+        ancestors: &mut Vec<Vec<i32>>,
         v: i32,
     ) {
         if visited[v as usize] {
@@ -45,10 +32,18 @@ impl Solution {
 
         if let Some(adj) = graph.get(&v) {
             for u in adj {
-                Solution::dfs(graph, visited, sorted, *u);
+                Solution::dfs(graph, visited, ancestors, *u);
             }
         }
-        sorted.push(v);
+        if let Some(incominig) = graph.get(&v) {
+            for income in incominig.iter() {
+                let prev_ancestors = ancestors[*income as usize].clone();
+                ancestors[v as usize].push(*income);
+                ancestors[v as usize].extend(prev_ancestors);
+            }
+        }
+        ancestors[v as usize].sort();
+        ancestors[v as usize].dedup();
     }
 }
 
