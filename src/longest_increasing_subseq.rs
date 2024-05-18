@@ -1,21 +1,23 @@
-use std::cmp::max;
-
 pub struct Solution {}
 
 impl Solution {
     pub fn length_of_lis(nums: Vec<i32>) -> i32 {
-        let mut length = vec![0; nums.len()];
-        let mut result = 0;
-        for k in 0..nums.len() {
-            length[k] = 1;
-            for i in 0..k {
-                if nums[i] < nums[k] {
-                    length[k] = max(length[k], length[i] + 1);
+        let mut seq = Vec::with_capacity(nums.len());
+        seq.push(nums[0]);
+
+        for n in nums.iter() {
+            if n > seq.last().unwrap() {
+                seq.push(*n);
+            } else {
+                let pos = seq.binary_search(n);
+                if let Err(pos) = pos {
+                    if seq[pos] > *n {
+                        seq[pos] = *n;
+                    }
                 }
             }
-            result = max(length[k], result);
         }
-        result
+        seq.len() as i32
     }
 }
 
