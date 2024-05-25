@@ -6,3 +6,4 @@ pub mod house_robbery2;
 pub mod longest_increasing_subseq;
 pub mod min_sub_array_len;
 pub mod palindrome_partition;
+pub mod longest_consecutive;
