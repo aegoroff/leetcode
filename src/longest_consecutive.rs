@@ -1,3 +1,4 @@
+use std::cmp::max;
 use std::collections::{HashMap, HashSet};
 
 pub struct Solution {}
@@ -44,8 +45,9 @@ impl Solution {
         let mut visited: HashSet<i32> = HashSet::new();
         let mut stack: Vec<i32> = Vec::with_capacity(nums.len());
 
-        let mut count = 0;
+        let mut result = 0;
         for n in &nums {
+            let mut count = 1;
             if visited.contains(n) {
                 continue;
             }
@@ -62,9 +64,10 @@ impl Solution {
                     }
                 }
             }
+            result = max(result, count);
         }
 
-        count + 1
+        result
     }
 }
 
