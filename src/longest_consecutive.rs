@@ -1,73 +1,16 @@
-use std::cmp::max;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 pub struct Solution {}
 
 impl Solution {
     pub fn longest_consecutive(nums: Vec<i32>) -> i32 {
-        if nums.is_empty() {
-            return 0;
-        }
-        if nums.len() == 1 {
-            return 1;
-        }
-        let mut graph: HashMap<i32, HashSet<i32>> = HashMap::new();
-        for num in &nums {
-            let prev = num - 1;
-            let next = num + 1;
-            let has_prev = graph.contains_key(&prev);
-            let has_next = graph.contains_key(&next);
-            let adj = graph.entry(*num).or_insert(HashSet::new());
-            if has_prev {
-                adj.insert(prev);
-            }
-            if has_next {
-                adj.insert(next);
-            }
-        }
-        // Rust specific (cannot borrow mutable twice so do one more cycle)
-        for num in &nums {
-            let prev = num - 1;
-            let next = num + 1;
-            let has_prev = graph.contains_key(&prev);
-            let has_next = graph.contains_key(&next);
-            if has_prev {
-                graph.entry(prev).and_modify(|p| {
-                    p.insert(*num);
-                });
-            }
-            if has_next {
-                graph.entry(next).and_modify(|p| {
-                    p.insert(*num);
-                });
-            }
-        }
-        let mut visited: HashSet<i32> = HashSet::new();
-        let mut stack: Vec<i32> = Vec::with_capacity(nums.len());
+        let nums: HashSet<_> = nums.into_iter().collect();
 
-        let mut result = 0;
-        for n in &nums {
-            let mut count = 1;
-            if visited.contains(n) {
-                continue;
-            }
-            stack.push(*n);
-            while let Some(node) = stack.pop() {
-                visited.insert(node);
-                if let Some(adj) = graph.get(&node) {
-                    for a in adj {
-                        if visited.contains(a) {
-                            continue;
-                        }
-                        count += 1;
-                        stack.push(*a);
-                    }
-                }
-            }
-            result = max(result, count);
-        }
-
-        result
+        nums.iter()
+            .filter(|n| !nums.contains(&(*n - 1)))
+            .map(|n| (*n..).take_while(|next| nums.contains(next)).count())
+            .max()
+            .unwrap_or_default() as i32
     }
 }
 
