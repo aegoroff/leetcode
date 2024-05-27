@@ -1,19 +1,14 @@
-use std::collections::HashMap;
-
 pub struct Solution {}
 
 impl Solution {
     pub fn find_circle_num(is_connected: Vec<Vec<i32>>) -> i32 {
-        let mut graph: HashMap<i32, Vec<i32>> = HashMap::with_capacity(is_connected.len());
+        let mut graph: Vec<Vec<i32>> = vec![vec![]; is_connected.len()];
         (0..is_connected.len()).for_each(|i| {
             for j in 0..is_connected[i].len() {
                 if i == j || is_connected[i][j] == 0 {
                     continue;
                 }
-                graph
-                    .entry(i as i32)
-                    .and_modify(|e| e.push(j as i32))
-                    .or_insert(vec![j as i32]);
+                graph[i].push(j as i32);
             }
         });
         let mut visited: Vec<i32> = vec![-1; is_connected.len()];
@@ -28,14 +23,12 @@ impl Solution {
     }
 }
 
-fn dfs(graph: &HashMap<i32, Vec<i32>>, visited: &mut Vec<i32>, v: i32, color: i32) {
+fn dfs(graph: &Vec<Vec<i32>>, visited: &mut Vec<i32>, v: i32, color: i32) {
     visited[v as usize] = color;
-    if let Some(adj) = graph.get(&v) {
-        for u in adj {
-            let to_color = visited[*u as usize];
-            if to_color == -1 {
-                dfs(graph, visited, *u, color);
-            }
+    for u in &graph[v as usize] {
+        let to_color = visited[*u as usize];
+        if to_color == -1 {
+            dfs(graph, visited, *u, color);
         }
     }
 }
