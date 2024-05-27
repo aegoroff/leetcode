@@ -27,18 +27,11 @@ impl Solution {
         while x.is_some() || y.is_some() {
             let xval = if let Some(x) = x.clone() { x.val } else { 0 };
             let yval = if let Some(y) = y.clone() { y.val } else { 0 };
-            let mut z = xval + yval + carry;
+            let z = xval + yval + carry;
             if z > 9 {
-                let mut digits = 1;
-                let mut base = 10;
-                while z > 9 {
-                    let rest = z % base;
-                    z /= base;
-                    carry = 1;
-                    stack.push(rest);
-                    digits += 1;
-                    base *= digits;
-                }
+                let rest = z % 10;
+                carry = 1;
+                stack.push(rest);
             } else {
                 carry = 0;
                 stack.push(z);
