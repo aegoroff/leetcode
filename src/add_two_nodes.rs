@@ -50,6 +50,9 @@ impl Solution {
                 y = yv.next;
             }
         }
+        if carry > 0 {
+            stack.push(carry);
+        }
 
         let mut answer: Option<Box<ListNode>> = None;
 
