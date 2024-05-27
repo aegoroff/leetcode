@@ -9,3 +9,4 @@ pub mod longest_increasing_subseq;
 pub mod min_sub_array_len;
 pub mod num_of_provinces;
 pub mod palindrome_partition;
+pub mod valid_perfect_square;
