@@ -84,12 +84,13 @@ mod test {
 
         assert_eq!(
             Solution::add_two_numbers(Some(Box::new(l1)), Some(Box::new(l2))),
-            None
+            Some(Box::new(ListNode {
+                val: 7,
+                next: Some(Box::new(ListNode {
+                    val: 0,
+                    next: Some(Box::new(ListNode::new(8))),
+                })),
+            }))
         );
     }
-
-    // #[test]
-    // fn test2() {
-    //     assert_eq!(Solution::rob(vec![2, 7, 9, 3, 1]), 12);
-    // }
 }

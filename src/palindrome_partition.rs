@@ -68,7 +68,7 @@ mod test {
         );
     }
 
-    //#[test]
+    #[test]
     fn test5() {
         assert_eq!(
             Solution::partition("abbab".to_string()),
