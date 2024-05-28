@@ -2,6 +2,12 @@ use std::collections::VecDeque;
 
 pub struct Solution {}
 
+#[derive(PartialEq, Eq, Clone, Debug)]
+pub struct Weigted {
+    pub to: i32,
+    pub weight: i32,
+}
+
 impl Solution {
     pub fn find_cheapest_price(n: i32, flights: Vec<Vec<i32>>, src: i32, dst: i32, k: i32) -> i32 {
         let mut graph = vec![vec![]; n as usize];
@@ -9,17 +15,20 @@ impl Solution {
             let from = v[0];
             let to = v[1];
             let weight = v[2];
-            graph[from as usize].push((to, weight));
+            graph[from as usize].push(Weigted { to, weight });
         });
-        let mut distance = vec![(0, -1); n as usize];
+        let mut distance = vec![(0, 0); n as usize];
         let mut q = VecDeque::from([src]);
         while let Some(node) = q.pop_front() {
             let node = node as usize;
-            let neighb = &graph[node];
-            let to = distance[node];
-            if to.0 == 0 {
-                distance[node] = (to.0 + 1, neighb[0].1);
-                q.push_back(neighb[0].0);
+            let adj = &graph[node];
+            let from_distance = distance[node];
+            for a in adj {
+                let to_distance = distance[a.to as usize];
+                if to_distance.0 == 0 {
+                    distance[a.to as usize] = (from_distance.0 + 1, from_distance.1 + a.weight);
+                    q.push_back(a.to);
+                }
             }
         }
         -1
