@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 pub struct Solution {}
 
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub struct Weigted {
+pub struct Edge {
     pub to: i32,
     pub weight: i32,
 }
@@ -15,7 +15,7 @@ impl Solution {
             let from = v[0];
             let to = v[1];
             let weight = v[2];
-            graph[from as usize].push(Weigted { to, weight });
+            graph[from as usize].push(Edge { to, weight });
         });
         let mut distance = vec![(0, 0); n as usize];
         let mut q = VecDeque::from([src]);
