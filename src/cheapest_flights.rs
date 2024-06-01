@@ -1,11 +1,29 @@
-use std::collections::VecDeque;
+use std::{cmp::Ordering, collections::BinaryHeap};
 
 pub struct Solution {}
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Edge {
-    pub to: i32,
     pub weight: i32,
+    pub to: i32,
+}
+
+impl Ord for Edge {
+    fn cmp(&self, other: &Self) -> Ordering {
+        // Notice that the we flip the ordering on costs.
+        // In case of a tie we compare positions - this step is necessary
+        // to make implementations of `PartialEq` and `Ord` consistent.
+        other
+            .weight
+            .cmp(&self.weight)
+            .then_with(|| self.to.cmp(&other.to))
+    }
+}
+
+impl PartialOrd for Edge {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 impl Solution {
@@ -17,21 +35,27 @@ impl Solution {
             let weight = v[2];
             graph[from as usize].push(Edge { to, weight });
         });
-        let mut distance = vec![(0, 0); n as usize];
-        let mut q = VecDeque::from([src]);
-        while let Some(node) = q.pop_front() {
-            let node = node as usize;
-            let adj = &graph[node];
-            let from_distance = distance[node];
+        let mut distance = vec![(i32::MAX, 0); n as usize];
+        let mut q = BinaryHeap::from([Edge { to: src, weight: 0 }]);
+        while let Some(node) = q.pop() {
+            let adj = &graph[node.to as usize];
+            if node.weight > distance[node.to as usize].0 {
+                continue;
+            }
             for a in adj {
+                let next = Edge {
+                    to: a.to,
+                    weight: node.weight + a.weight,
+                };
+
                 let to_distance = distance[a.to as usize];
-                if to_distance.0 == 0 {
-                    distance[a.to as usize] = (from_distance.0 + 1, from_distance.1 + a.weight);
-                    q.push_back(a.to);
+                if next.weight < to_distance.0 && to_distance.1 <= k {
+                    distance[a.to as usize] = (next.weight, to_distance.1 + 1);
+                    q.push(next);
                 }
             }
         }
-        -1
+        distance[dst as usize].0
     }
 }
 

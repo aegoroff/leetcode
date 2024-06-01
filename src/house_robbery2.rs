@@ -13,17 +13,10 @@ impl Solution {
         let mut sums: Vec<i32> = vec![0; nums.len()];
         for i in 0..nums.len() {
             if i == 0 {
-                sums[i] = nums[i];
+                let pre_last = nums.len() - 2 % nums.len();
+                sums[i] = cmp::max(nums[pre_last] + nums[i], nums[nums.len() - 1]);
             } else if i == 1 {
-                sums[i] = cmp::max(nums[1], nums[0]);
-            } else if i == nums.len() - 1 {
-                if nums.len() == 3 {
-                    sums[i] = cmp::max(sums[i - 1], nums[i]);
-                } else if sums[2] > sums[1] {
-                    sums[i] = cmp::max(sums[i - 1], sums[i - 2] - nums[0] + nums[i]);
-                } else {
-                    sums[i] = cmp::max(sums[i - 2] + nums[i], sums[i - 1]);
-                }
+                sums[i] = cmp::max(nums[nums.len() - 1] + nums[i], sums[0]);
             } else {
                 sums[i] = cmp::max(sums[i - 2] + nums[i], sums[i - 1]);
             }
