@@ -5,7 +5,7 @@ pub struct Solution {}
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Edge {
     pub weight: i32,
-    pub to: i32,
+    pub vertex: i32,
 }
 
 impl Ord for Edge {
@@ -16,7 +16,7 @@ impl Ord for Edge {
         other
             .weight
             .cmp(&self.weight)
-            .then_with(|| self.to.cmp(&other.to))
+            .then_with(|| self.vertex.cmp(&other.vertex))
     }
 }
 
@@ -33,29 +33,37 @@ impl Solution {
             let from = v[0];
             let to = v[1];
             let weight = v[2];
-            graph[from as usize].push(Edge { to, weight });
+            graph[from as usize].push(Edge { vertex: to, weight });
         });
         let mut distance = vec![(i32::MAX, 0); n as usize];
-        let mut q = BinaryHeap::from([Edge { to: src, weight: 0 }]);
+        let mut q = BinaryHeap::from([Edge {
+            vertex: src,
+            weight: 0,
+        }]);
         while let Some(node) = q.pop() {
-            let adj = &graph[node.to as usize];
-            if node.weight > distance[node.to as usize].0 {
+            let adj = &graph[node.vertex as usize];
+            if node.weight > distance[node.vertex as usize].0 {
                 continue;
             }
             for a in adj {
                 let next = Edge {
-                    to: a.to,
+                    vertex: a.vertex,
                     weight: node.weight + a.weight,
                 };
 
-                let to_distance = distance[a.to as usize];
-                if next.weight < to_distance.0 && to_distance.1 <= k {
-                    distance[a.to as usize] = (next.weight, to_distance.1 + 1);
+                let to_distance = distance[a.vertex as usize];
+                let node_distance = distance[node.vertex as usize];
+                if next.weight < to_distance.0 && node_distance.1 <= k {
+                    distance[a.vertex as usize] = (next.weight, node_distance.1 + 1);
                     q.push(next);
                 }
             }
         }
-        distance[dst as usize].0
+        if distance[dst as usize].0 < i32::MAX {
+            distance[dst as usize].0
+        } else {
+            -1
+        }
     }
 }
 
@@ -97,5 +105,15 @@ mod test {
         let dst = 2;
         let k = 0;
         assert_eq!(Solution::find_cheapest_price(n, flights, src, dst, k), 500);
+    }
+
+    #[test]
+    fn test4() {
+        let n = 4;
+        let flights = vec![vec![0, 1, 1], vec![0, 2, 5], vec![1, 2, 1], vec![2, 3, 1]];
+        let src = 0;
+        let dst = 3;
+        let k = 1;
+        assert_eq!(Solution::find_cheapest_price(n, flights, src, dst, k), 6);
     }
 }
