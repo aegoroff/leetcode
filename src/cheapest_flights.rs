@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::BinaryHeap};
+use std::collections::VecDeque;
 
 pub struct Solution {}
 
@@ -23,24 +23,6 @@ impl Default for Weight {
     }
 }
 
-impl Ord for Edge {
-    fn cmp(&self, other: &Self) -> Ordering {
-        // Notice that the we flip the ordering on costs.
-        // In case of a tie we compare positions - this step is necessary
-        // to make implementations of `PartialEq` and `Ord` consistent.
-        other
-            .weight
-            .cmp(&self.weight)
-            .then_with(|| self.vertex.cmp(&other.vertex))
-    }
-}
-
-impl PartialOrd for Edge {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
 impl Solution {
     pub fn find_cheapest_price(n: i32, flights: Vec<Vec<i32>>, src: i32, dst: i32, k: i32) -> i32 {
         let mut graph = vec![vec![]; n as usize];
@@ -50,39 +32,31 @@ impl Solution {
             let weight = v[2];
             graph[from as usize].push(Edge { vertex: to, weight });
         });
-        let mut visited = vec![Weight::default(); n as usize];
-        let mut q = BinaryHeap::from([Edge {
-            vertex: src,
-            weight: 0,
-        }]);
-        while let Some(node) = q.pop() {
-            let adj = &graph[node.vertex as usize];
-            let current = visited[node.vertex as usize];
-            if node.weight > current.weight {
-                continue;
-            }
+        let mut distance = vec![Weight::default(); n as usize];
+        let mut in_queue = vec![false; n as usize];
+        distance[src as usize].weight = 0;
+        let mut q: VecDeque<i32> = VecDeque::new();
+        q.push_back(src);
+        in_queue[src as usize] = true;
+        while let Some(node) = q.pop_front() {
+            in_queue[node as usize] = false;
+            let adj = &graph[node as usize];
             for a in adj {
-                let next = Edge {
-                    vertex: a.vertex,
-                    weight: node.weight + a.weight,
-                };
+                let mut w = distance[node as usize];
+                if distance[a.vertex as usize].weight > w.weight + a.weight && w.distance <= k {
+                    w.weight += a.weight;
+                    w.distance += 1;
+                    distance[a.vertex as usize] = w;
 
-                if current.distance == k && next.vertex == dst {
-                    return next.weight;
-                }
-                let mut to = visited[next.vertex as usize];
-                if next.weight < to.weight {
-                    to.distance = current.distance + 1;
-                    to.weight = next.weight;
-                    if to.distance <= k {
-                        visited[next.vertex as usize] = to;
-                        q.push(next);
+                    if !in_queue[a.vertex as usize] {
+                        q.push_back(a.vertex);
+                        in_queue[a.vertex as usize] = true;
                     }
                 }
             }
         }
-        if visited[dst as usize].weight < i32::MAX {
-            visited[dst as usize].weight
+        if distance[dst as usize].weight < i32::MAX {
+            distance[dst as usize].weight
         } else {
             -1
         }
