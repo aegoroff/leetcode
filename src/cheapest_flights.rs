@@ -172,4 +172,14 @@ mod test {
         let k = 2;
         assert_eq!(Solution::find_cheapest_price(n, flights, src, dst, k), 7);
     }
+
+    #[test]
+    fn test7() {
+        let n = 3;
+        let flights = vec![vec![0, 1, 2], vec![1, 2, 1], vec![2, 0, 10]];
+        let src = 1;
+        let dst = 2;
+        let k = 1;
+        assert_eq!(Solution::find_cheapest_price(n, flights, src, dst, k), 1);
+    }
 }
