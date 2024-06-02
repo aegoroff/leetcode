@@ -53,7 +53,10 @@ impl Solution {
 
                 let to_distance = distance[a.vertex as usize];
                 let node_distance = distance[node.vertex as usize];
-                if next.weight < to_distance.0 && node_distance.1 <= k {
+                if node_distance.1 == k && next.vertex == dst {
+                    return next.weight;
+                }
+                if next.weight < to_distance.0 {
                     distance[a.vertex as usize] = (next.weight, node_distance.1 + 1);
                     q.push(next);
                 }
