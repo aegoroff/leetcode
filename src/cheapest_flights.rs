@@ -8,6 +8,21 @@ pub struct Edge {
     pub vertex: i32,
 }
 
+#[derive(PartialEq, Eq, Clone, Debug, Copy)]
+pub struct Weight {
+    pub weight: i32,
+    pub distance: i32,
+}
+
+impl Default for Weight {
+    fn default() -> Self {
+        Self {
+            weight: i32::MAX,
+            distance: 0,
+        }
+    }
+}
+
 impl Ord for Edge {
     fn cmp(&self, other: &Self) -> Ordering {
         // Notice that the we flip the ordering on costs.
@@ -35,14 +50,15 @@ impl Solution {
             let weight = v[2];
             graph[from as usize].push(Edge { vertex: to, weight });
         });
-        let mut distance = vec![(i32::MAX, 0); n as usize];
+        let mut visited = vec![Weight::default(); n as usize];
         let mut q = BinaryHeap::from([Edge {
             vertex: src,
             weight: 0,
         }]);
         while let Some(node) = q.pop() {
             let adj = &graph[node.vertex as usize];
-            if node.weight > distance[node.vertex as usize].0 {
+            let current = visited[node.vertex as usize];
+            if node.weight > current.weight {
                 continue;
             }
             for a in adj {
@@ -51,19 +67,20 @@ impl Solution {
                     weight: node.weight + a.weight,
                 };
 
-                let to_distance = distance[a.vertex as usize];
-                let node_distance = distance[node.vertex as usize];
-                if node_distance.1 == k && next.vertex == dst {
+                if current.distance == k && next.vertex == dst {
                     return next.weight;
                 }
-                if next.weight < to_distance.0 {
-                    distance[a.vertex as usize] = (next.weight, node_distance.1 + 1);
+                let mut to = visited[next.vertex as usize];
+                if next.weight < to.weight {
+                    to.distance = current.distance + 1;
+                    to.weight = next.weight;
+                    visited[next.vertex as usize] = to;
                     q.push(next);
                 }
             }
         }
-        if distance[dst as usize].0 < i32::MAX {
-            distance[dst as usize].0
+        if visited[dst as usize].weight < i32::MAX {
+            visited[dst as usize].weight
         } else {
             -1
         }
