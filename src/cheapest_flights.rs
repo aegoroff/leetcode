@@ -74,8 +74,10 @@ impl Solution {
                 if next.weight < to.weight {
                     to.distance = current.distance + 1;
                     to.weight = next.weight;
-                    visited[next.vertex as usize] = to;
-                    q.push(next);
+                    if to.distance <= k {
+                        visited[next.vertex as usize] = to;
+                        q.push(next);
+                    }
                 }
             }
         }
