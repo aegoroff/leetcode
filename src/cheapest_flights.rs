@@ -38,10 +38,10 @@ impl Solution {
         let mut q: VecDeque<i32> = VecDeque::new();
         q.push_back(src);
         in_queue[src as usize] = true;
-        while let Some(node) = q.pop_front() {
-            in_queue[node as usize] = false;
-            let adj = &graph[node as usize];
-            let from = distance[node as usize];
+        while let Some(from) = q.pop_front() {
+            in_queue[from as usize] = false;
+            let adj = &graph[from as usize];
+            let from = distance[from as usize];
             for to in adj {
                 if distance[to.vertex as usize].weight > from.weight + to.weight && from.distance <= k {
                     distance[to.vertex as usize] = Weight {
