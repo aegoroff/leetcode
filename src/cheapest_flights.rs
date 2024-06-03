@@ -41,16 +41,17 @@ impl Solution {
         while let Some(node) = q.pop_front() {
             in_queue[node as usize] = false;
             let adj = &graph[node as usize];
-            for a in adj {
-                let mut w = distance[node as usize];
-                if distance[a.vertex as usize].weight > w.weight + a.weight && w.distance <= k {
-                    w.weight += a.weight;
-                    w.distance += 1;
-                    distance[a.vertex as usize] = w;
+            let w = distance[node as usize];
+            for to in adj {
+                if distance[to.vertex as usize].weight > w.weight + to.weight && w.distance <= k {
+                    distance[to.vertex as usize] = Weight {
+                        weight: w.weight + to.weight,
+                        distance: w.distance + 1,
+                    };
 
-                    if !in_queue[a.vertex as usize] {
-                        q.push_back(a.vertex);
-                        in_queue[a.vertex as usize] = true;
+                    if !in_queue[to.vertex as usize] {
+                        q.push_back(to.vertex);
+                        in_queue[to.vertex as usize] = true;
                     }
                 }
             }
