@@ -8,21 +8,6 @@ pub struct Edge {
     pub vertex: i32,
 }
 
-#[derive(PartialEq, Eq, Clone, Debug, Copy)]
-pub struct Weight {
-    pub weight: i32,
-    pub distance: i32,
-}
-
-impl Default for Weight {
-    fn default() -> Self {
-        Self {
-            weight: i32::MAX,
-            distance: 0,
-        }
-    }
-}
-
 impl Solution {
     pub fn find_cheapest_price(n: i32, flights: Vec<Vec<i32>>, src: i32, dst: i32, k: i32) -> i32 {
         let mut graph = vec![vec![]; n as usize];
@@ -32,35 +17,35 @@ impl Solution {
             let weight = v[2];
             graph[from as usize].push(Edge { vertex: to, weight });
         });
-        let mut distance = vec![Weight::default(); n as usize];
-        let mut in_queue = vec![false; n as usize];
-        distance[src as usize].weight = 0;
-        let mut q: VecDeque<i32> = VecDeque::new();
-        q.push_back(src);
-        in_queue[src as usize] = true;
-        while let Some(from) = q.pop_front() {
-            in_queue[from as usize] = false;
-            let adj = &graph[from as usize];
-            let from = distance[from as usize];
-            for to in adj {
-                if distance[to.vertex as usize].weight > from.weight + to.weight && from.distance <= k {
-                    distance[to.vertex as usize] = Weight {
-                        weight: from.weight + to.weight,
-                        distance: from.distance + 1,
-                    };
+        let mut k = k + 1;
+        let mut prices = vec![-1; n as usize];
+        prices[src as usize] = 0;
+        let mut q: VecDeque<Edge> = VecDeque::new();
+        q.push_back(Edge { weight: 0, vertex: src });
+        while !q.is_empty() {
+            if k == 0 {
+                break;
+            }
 
-                    if !in_queue[to.vertex as usize] {
-                        q.push_back(to.vertex);
-                        in_queue[to.vertex as usize] = true;
+            let mut sz = q.len();
+            while sz > 0 {
+                sz -= 1;
+                let from = q.pop_front().unwrap();
+                let adj = &graph[from.vertex as usize];
+                for to in adj {
+                    if prices[to.vertex as usize] == -1 ||  from.weight + to.weight < prices[to.vertex as usize]
+                    {
+                        let price = from.weight + to.weight;
+                        prices[to.vertex as usize] = price;
+    
+                        q.push_back(Edge { weight: price, vertex: to.vertex });
                     }
                 }
             }
+
+            k -= 1;
         }
-        if distance[dst as usize].weight < i32::MAX {
-            distance[dst as usize].weight
-        } else {
-            -1
-        }
+        prices[dst as usize]
     }
 }
 
