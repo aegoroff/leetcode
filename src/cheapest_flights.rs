@@ -22,11 +22,7 @@ impl Solution {
         prices[src as usize] = 0;
         let mut q: VecDeque<Edge> = VecDeque::new();
         q.push_back(Edge { weight: 0, vertex: src });
-        while !q.is_empty() {
-            if k == 0 {
-                break;
-            }
-
+        while !q.is_empty() && k > 0 {
             let mut sz = q.len();
             while sz > 0 {
                 sz -= 1;
